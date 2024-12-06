@@ -1,0 +1,99 @@
+2. データベース設計（Database Design）
+次に、システムで使用するデータベースのテーブル設計を行います。主要なエンティティ（テーブル）とそのカラムを示し、どのようなデータを保存するかを決定します。
+
+データベーステーブル設計
+usersテーブル（ユーザー情報）
+ユーザー基本情報を格納します。
+sql
+
+CREATE TABLE users (
+    user_id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    email VARCHAR(255) NOT NULL,
+    role VARCHAR(50) NOT NULL,  -- 例：admin, user
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+user_id: ユーザーの一意の識別子。
+username: ユーザー名。
+password: ユーザーのパスワード（暗号化して保存）。
+email: ユーザーのメールアドレス。
+role: ユーザーの役職（例: 管理者、一般ユーザーなど）。
+created_at: ユーザーが作成された日時。
+user_profilesテーブル（ユーザー詳細情報）
+ユーザーの詳細情報（名前、住所など）を格納します。
+
+
+sql
+
+CREATE TABLE user_profiles (
+    user_id INT PRIMARY KEY,
+    full_name VARCHAR(255) NOT NULL,
+    address VARCHAR(255),
+    phone_number VARCHAR(50),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+user_id: users テーブルの外部キー。users テーブルのユーザーに紐づけられます。
+full_name: ユーザーのフルネーム。
+address: ユーザーの住所。
+phone_number: ユーザーの電話番号。
+sessionsテーブル（セッション情報）
+ユーザーのログイン履歴やセッション情報を格納します。
+
+
+
+sql
+
+CREATE TABLE sessions (
+    session_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    login_time TIMESTAMP NOT NULL,
+    logout_time TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+session_id: セッションの一意識別子。
+user_id: ユーザーのID（users テーブルの外部キー）。
+login_time: ログインした時間。
+logout_time: ログアウトした時間（ログインしている場合はNULL）。
+meetingsテーブル（面談情報）
+ユーザーとの面談内容を管理します。
+
+
+sql
+
+CREATE TABLE meetings (
+    meeting_id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id INT,
+    meeting_date DATE NOT NULL,
+    meeting_type VARCHAR(50) NOT NULL,  -- 例：月次面談、1on1
+    content TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+meeting_id: 面談の一意識別子。
+user_id: 面談対象のユーザーID（users テーブルの外部キー）。
+meeting_date: 面談日時。
+meeting_type: 面談の種類（例: 月次面談、1on1）。
+content: 面談内容。
+created_at: 面談が登録された日時。
+commentsテーブル（コメント情報）
+面談や情報共有に対するコメントを管理します。
+
+
+sql
+
+CREATE TABLE comments (
+    comment_id INT AUTO_INCREMENT PRIMARY KEY,
+    meeting_id INT,
+    user_id INT,
+    comment_text TEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (meeting_id) REFERENCES meetings(meeting_id),
+    FOREIGN KEY (user_id) REFERENCES users(user_id)
+);
+comment_id: コメントの一意識別子。
+meeting_id: コメントが関連する面談のID（meetings テーブルの外部キー）。
+user_id: コメントを書いたユーザーのID（users テーブルの外部キー）。
+comment_text: コメント内容。
+created_at: コメントの作成日時。
